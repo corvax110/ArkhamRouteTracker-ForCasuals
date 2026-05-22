@@ -23,7 +23,7 @@ namespace ArkhamDisplay{
 			}else if(Data.CityNGPlus){
 				currentRoute = "CityNG+";
 			}else if (Data.CityGlitchless){
-				// currentRoute = "CityGlitchless"; // TODO - Finalize and add the Glitchless route
+				currentRoute = "CityGlitchless";
 			}
 		}
 

@@ -2,6 +2,7 @@
   "AsylumDefault": "Routes/Asylum.tsv",
   "AsylumGlitchless": "Routes/Asylum-Glitchless.tsv",
   "CityDefault": "Routes/City.tsv",
+  "CityGlitchless": "Routes/City-Glitchless.tsv",
   "CityCatwoman": "Routes/City-Catwoman.tsv",
   "CityNG+": "Routes/City-NGPlus.tsv",
   "CityNG+Catwoman": "Routes/City-NGPlus-Catwoman.tsv",
