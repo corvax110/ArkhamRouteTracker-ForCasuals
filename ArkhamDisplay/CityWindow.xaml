@@ -24,9 +24,46 @@
 			</MenuItem>
 			<MenuItem Header="_Route">
 				<MenuItem Name="BreakablesAtBottomMenuItem" Header="Cameras and Balloons at Bottom" IsCheckable="True" IsChecked="False" Click="UpdatePreferences"/>
-				<MenuItem Name="CatwomanMenuItem" Header="Catwoman" IsCheckable="True" IsChecked="False" Click="UpdatePreferences"/>
-				<MenuItem Name="GlitchlessMenuItem" Header="Glitchless" IsCheckable="True" IsChecked="False" Click="UpdatePreferences"/>
-				<MenuItem Name="NGPlusMenuItem" Header="NG+" IsCheckable="True" IsChecked="False" Click="UpdatePreferences"/>
+				<MenuItem Name="CatwomanMenuItem" Header="Catwoman" IsCheckable="True" IsChecked="False" Click="UpdatePreferences">
+					<MenuItem.Style>
+						<Style TargetType="MenuItem" BasedOn="{StaticResource {x:Type MenuItem}}">
+							<Setter Property="IsEnabled" Value="True" />
+							<Style.Triggers>
+								<DataTrigger Binding="{Binding ElementName=GlitchlessMenuItem, Path=IsChecked}" Value="True">
+									<Setter Property="IsEnabled" Value="False" />
+								</DataTrigger>
+							</Style.Triggers>
+						</Style>
+					</MenuItem.Style>
+				</MenuItem>
+				<MenuItem Name="GlitchlessMenuItem" Header="Glitchless" IsCheckable="True" IsChecked="False" Click="UpdatePreferences">
+					<MenuItem.Style>
+						<Style TargetType="MenuItem" BasedOn="{StaticResource {x:Type MenuItem}}">
+							<Setter Property="IsEnabled" Value="False" />
+							<Style.Triggers>
+								<MultiDataTrigger>
+									<MultiDataTrigger.Conditions>
+										<Condition Binding="{Binding ElementName=CatwomanMenuItem, Path=IsChecked}" Value="False" />
+										<Condition Binding="{Binding ElementName=NGPlusMenuItem, Path=IsChecked}" Value="False" />
+									</MultiDataTrigger.Conditions>
+									<Setter Property="IsEnabled" Value="True" />
+								</MultiDataTrigger>
+							</Style.Triggers>
+						</Style>
+					</MenuItem.Style>
+				</MenuItem>
+				<MenuItem Name="NGPlusMenuItem" Header="NG+" IsCheckable="True" IsChecked="False" Click="UpdatePreferences">
+					<MenuItem.Style>
+						<Style TargetType="MenuItem" BasedOn="{StaticResource {x:Type MenuItem}}">
+							<Setter Property="IsEnabled" Value="True" />
+							<Style.Triggers>
+								<DataTrigger Binding="{Binding ElementName=GlitchlessMenuItem, Path=IsChecked}" Value="True">
+									<Setter Property="IsEnabled" Value="False" />
+								</DataTrigger>
+							</Style.Triggers>
+						</Style>
+					</MenuItem.Style>
+				</MenuItem>
 			</MenuItem>
 			<MenuItem Header="_Stats" Click="OpenStatsWindow"/>
 		</Menu>
