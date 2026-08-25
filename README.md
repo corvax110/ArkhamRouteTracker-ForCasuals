@@ -1,9 +1,9 @@
-# ArkhamRouteTracker
+# ArkhamRouteTracker For Casuals
 Tool to help learn 100% speedruns for all four main-series Batman Arkham games.
 
 Route trackers for each game originally created by oneeyeddeacon.
 
-My changes are done because i am an insane person and follow along the speedrun routes when i play, and i wanted to customize a couple things to help with my casual run.
+My changes are done because i am an insane person and follow along the speedrun routes when i play, and i wanted to customize a couple things to help with my significantly more casual run.
 
 Things added:
 
