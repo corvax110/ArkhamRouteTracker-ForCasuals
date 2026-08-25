@@ -60,7 +60,7 @@ namespace ArkhamDisplay{
 		public volatile bool knight120 = false;
 		public volatile bool knight240 = false;
 		public volatile bool knightMoF = false;
-		public volatile List<Entry> ignoreList;
+		public volatile List<Entry> ignoreList = new List<Entry>();
 	}
 
 	public class Data{
