@@ -10,8 +10,10 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Shapes;
 
-namespace ArkhamDisplay{
-	public abstract class BaseWindow : Window{
+namespace ArkhamDisplay
+{
+	public abstract class BaseWindow : Window
+	{
 		protected Game game = Game.None;
 		protected SaveParser saveParser = null;
 		protected int minRequiredMatches = 1;
@@ -45,16 +47,19 @@ namespace ArkhamDisplay{
 		private RadioButton saveSelector3;
 		private MenuItem autoRefreshRoutesMenuItem;
 
-		public BaseWindow(Game game){
+		public BaseWindow(Game game)
+		{
 			this.game = game;
 
-			if(Data.SelectedGame != game){
+			if (Data.SelectedGame != game)
+			{
 				Data.SelectedGame = game;
 				Data.Save();
 			}
 		}
 
-		protected void PostInitialize(){
+		protected void PostInitialize()
+		{
 			stopButton = FindName("StopButton") as Button;
 			startButton = FindName("StartButton") as Button;
 			displayGrid = FindName("DisplayGrid") as Grid;
@@ -71,30 +76,35 @@ namespace ArkhamDisplay{
 			saveSelector3 = FindName("Save3") as RadioButton;
 			autoRefreshRoutesMenuItem = FindName("AutoRefreshRoutesMenuItem") as MenuItem;
 
-			if(stopButton == null || startButton == null || displayGrid == null || gridScroll == null || progressCounter == null || riddleCounter == null || saveSelector0 == null || saveSelector1 == null || saveSelector2 == null || saveSelector3 == null) {
+			if (stopButton == null || startButton == null || displayGrid == null || gridScroll == null || progressCounter == null || riddleCounter == null || saveSelector0 == null || saveSelector1 == null || saveSelector2 == null || saveSelector3 == null)
+			{
 				MessageBox.Show("Could not find all expected elements in the main window!");
 				throw new NullReferenceException("Could not find all expected elements in the main window!");
 			}
 
 			UpdateUI();
 
-			if(string.IsNullOrWhiteSpace(Data.SaveLocations[(int)game])){
+			if (string.IsNullOrWhiteSpace(Data.SaveLocations[(int)game]))
+			{
 				bool saveFilePathSelected = OpenSavePathWindowAndGetResult();
-				if(!saveFilePathSelected){
+				if (!saveFilePathSelected)
+				{
 					Close();
 					return;
 				}
 			}
 
-			if(Data.StatsWindowOpen){
+			if (Data.StatsWindowOpen)
+			{
 				OpenStatsWindow();
 			}
 		}
 
-		protected override void OnInitialized(EventArgs e){
+		protected override void OnInitialized(EventArgs e)
+		{
 			base.OnInitialized(e);
 
-			MinWidth = 300;
+			MinWidth = 500;
 			MinHeight = 700;
 
 			Rect rect = Utils.DetermineFinalWindowRectPosition(Data.WindowRect[(int)game], MinWidth, MinHeight);
@@ -104,96 +114,121 @@ namespace ArkhamDisplay{
 			Top = rect.Y;
 
 			var mainGrid = FindName("MainGrid");
-			if(mainGrid != null && mainGrid is Grid){
-				foreach(RowDefinition row in (mainGrid as Grid).RowDefinitions){
-					if(row.Name == "MainRow"){
+			if (mainGrid != null && mainGrid is Grid)
+			{
+				foreach (RowDefinition row in (mainGrid as Grid).RowDefinitions)
+				{
+					if (row.Name == "MainRow")
+					{
 						row.Height = new GridLength(Data.MainRowHeight, GridUnitType.Star);
-					}else if(row.Name == "SecondaryRow"){
+					}
+					else if (row.Name == "SecondaryRow")
+					{
 						row.Height = new GridLength(Data.SecondaryRowHeight, GridUnitType.Star);
 					}
 				}
 			}
 		}
 
-		protected override void OnClosed(EventArgs e){
+		protected override void OnClosed(EventArgs e)
+		{
 			base.OnClosed(e);
 			IsClosed = true;
 
-			if(stopButton != null){
+			if (stopButton != null)
+			{
 				stopButton.IsEnabled = false;
 			}
-			
-			if(startButton != null){
+
+			if (startButton != null)
+			{
 				startButton.IsEnabled = true;
 			}
 
-			if(updateWorker != null && updateWorker.IsBusy){
+			if (updateWorker != null && updateWorker.IsBusy)
+			{
 				updateWorker.CancelAsync();
 			}
 
 			//Save window stuff
 			bool shouldSave = false;
-			if(Data.WindowRect[(int)game].X != Left){
+			if (Data.WindowRect[(int)game].X != Left)
+			{
 				shouldSave = true;
 				Data.WindowRect[(int)game].X = Left;
 			}
 
-			if(Data.WindowRect[(int)game].Y != Top){
+			if (Data.WindowRect[(int)game].Y != Top)
+			{
 				shouldSave = true;
 				Data.WindowRect[(int)game].Y = Top;
 			}
 
-			if(Data.WindowRect[(int)game].Width != Width){
+			if (Data.WindowRect[(int)game].Width != Width)
+			{
 				shouldSave = true;
 				Data.WindowRect[(int)game].Width = Width;
 			}
 
-			if(Data.WindowRect[(int)game].Height != Height){
+			if (Data.WindowRect[(int)game].Height != Height)
+			{
 				shouldSave = true;
 				Data.WindowRect[(int)game].Height = Height;
 			}
 
 			var mainGrid = FindName("MainGrid");
-			if(mainGrid != null && mainGrid is Grid){
-				foreach(RowDefinition row in (mainGrid as Grid).RowDefinitions){
-					if(row.Name == "MainRow" && Data.MainRowHeight != row.Height.Value){
+			if (mainGrid != null && mainGrid is Grid)
+			{
+				foreach (RowDefinition row in (mainGrid as Grid).RowDefinitions)
+				{
+					if (row.Name == "MainRow" && Data.MainRowHeight != row.Height.Value)
+					{
 						shouldSave = true;
 						Data.MainRowHeight = row.Height.Value;
-					}else if(row.Name == "SecondaryRow" && Data.SecondaryRowHeight != row.Height.Value){
+					}
+					else if (row.Name == "SecondaryRow" && Data.SecondaryRowHeight != row.Height.Value)
+					{
 						shouldSave = true;
 						Data.SecondaryRowHeight = row.Height.Value;
 					}
 				}
 			}
 
-			if(shouldSave){
+			if (shouldSave)
+			{
 				Data.Save();
 			}
 
-			if(statsWindow != null){
+			if (statsWindow != null)
+			{
 				statsWindow.isClosedByMainWindow = true;
 				statsWindow.Close();
 			}
 		}
 
-		protected virtual SaveParser CreateSaveParser(){
+		protected virtual SaveParser CreateSaveParser()
+		{
 			return new SaveParser(Data.SaveLocations[(int)game], Data.SaveIDs[(int)game]);
 		}
 
-		protected void Stop_Button_Click(object sender, RoutedEventArgs e){
+		protected void Stop_Button_Click(object sender, RoutedEventArgs e)
+		{
 			updateWorker.CancelAsync();
 			stopButton.IsEnabled = false;
 			startButton.IsEnabled = true;
 			ignoreGapsForCurrentSession.Clear();
-			lock(saveParser){ saveParser = null; }
+			lock (saveParser) { saveParser = null; }
 		}
 
-		protected void Start_Button_Click(object sender, RoutedEventArgs e){
-			if(string.IsNullOrWhiteSpace(Data.SaveLocations[(int)game])){
+		protected void Start_Button_Click(object sender, RoutedEventArgs e)
+		{
+			if (string.IsNullOrWhiteSpace(Data.SaveLocations[(int)game]))
+			{
 				OpenSavePathWindow();
 			}
 
-			if(!System.IO.Directory.Exists(Data.SaveLocations[(int)game])){
+			if (!System.IO.Directory.Exists(Data.SaveLocations[(int)game]))
+			{
 				System.Windows.MessageBox.Show("Invalid save file! Please ensure the file exists and that the path has been entered correctly");
 				return;
 			}
@@ -212,18 +247,24 @@ namespace ArkhamDisplay{
 			saveParser = CreateSaveParser();
 		}
 
-		private void BackgroundWorkerOnDoWork(object sender, DoWorkEventArgs e){
+		private void BackgroundWorkerOnDoWork(object sender, DoWorkEventArgs e)
+		{
 			BackgroundWorker worker = (BackgroundWorker)sender;
-			while(!worker.CancellationPending){
+			while (!worker.CancellationPending)
+			{
 				worker.ReportProgress(0, "Dummy");
 				Thread.Sleep(Data.RefreshRate);
 			}
 		}
 
-		private void BackgroundWorkerOnProgressChanged(object sender, ProgressChangedEventArgs e){
-			try{
+		private void BackgroundWorkerOnProgressChanged(object sender, ProgressChangedEventArgs e)
+		{
+			try
+			{
 				Update();
-			}catch(Exception ex){
+			}
+			catch (Exception ex)
+			{
 				stopButton.IsEnabled = false;
 				startButton.IsEnabled = true;
 				updateWorker.CancelAsync();
@@ -234,39 +275,48 @@ namespace ArkhamDisplay{
 
 		protected abstract void SetCurrentRoute();
 
-		private void Update(){
-			if(autoRefreshRoutesMenuItem != null && autoRefreshRoutesMenuItem.IsChecked && Data.HaveRouteFilesChangedSinceLastReload()){
+		private void Update()
+		{
+			if (autoRefreshRoutesMenuItem != null && autoRefreshRoutesMenuItem.IsChecked && Data.HaveRouteFilesChangedSinceLastReload())
+			{
 				RefreshRoutes();
 				return;
 			}
 
 			string saveFile = Data.SaveLocations[(int)game];
-			if(string.IsNullOrWhiteSpace(saveFile)){
+			if (string.IsNullOrWhiteSpace(saveFile))
+			{
 				throw new Exception("Save file path is not valid");
 			}
 
-			if(saveParser != null){
+			if (saveParser != null)
+			{
 				bool updated = saveParser.Update();
-				if(!updated){
+				if (!updated)
+				{
 					return; //Save file didn't change, no need to do anythign else
 				}
 			}
 
 			SetCurrentRoute();
-			if(string.IsNullOrWhiteSpace(currentRoute)){
+			if (string.IsNullOrWhiteSpace(currentRoute))
+			{
 				MessageBox.Show("Current route was invalid.\nPlease restart the program and try again.");
 				return;
 			}
 
-			if(Data.GetRoute(currentRoute) == null){
+			if (Data.GetRoute(currentRoute) == null)
+			{
 				MessageBox.Show("Failed to load route \"" + currentRoute + "\"\nYou may need to reinstall the application.");
 				return;
 			}
 
 			UpdateRouteWindow();
 
-			if(!string.IsNullOrWhiteSpace(currentSecondaryRoute)){
-				if (Data.GetRoute(currentSecondaryRoute) == null) {
+			if (!string.IsNullOrWhiteSpace(currentSecondaryRoute))
+			{
+				if (Data.GetRoute(currentSecondaryRoute) == null)
+				{
 					MessageBox.Show("Failed to load secondary route \"" + currentRoute + "\"\nYou may need to reinstall the application.");
 					return;
 				}
@@ -277,8 +327,10 @@ namespace ArkhamDisplay{
 			SetStatsWindowStats();
 		}
 
-		private struct FinalEntry{
-			public FinalEntry(string name_, bool done_, int index_, int gapIndex_ = -1){
+		private struct FinalEntry
+		{
+			public FinalEntry(string name_, bool done_, int index_, int gapIndex_ = -1)
+			{
 				name = name_;
 				done = done_;
 				index = index_;
@@ -291,15 +343,18 @@ namespace ArkhamDisplay{
 			public int gapIndex;
 		}
 
-		protected virtual List<Entry> GetEntriesForDisplay(Route route){
+		protected virtual List<Entry> GetEntriesForDisplay(Route route)
+		{
 			return route.GetEntriesWithoutPlaceholders();
 		}
 
-		private bool EntryIsIgnoreGap(Entry entry){
+		private bool EntryIsIgnoreGap(Entry entry)
+		{
 			return entry.metadata.Contains(Metadata.IgnoreGap) || ignoreGapsForCurrentSession.Contains(entry.id);
 		}
 
-		protected virtual void UpdateRouteWindow(){
+		protected virtual void UpdateRouteWindow()
+		{
 			displayGrid.Children.Clear();
 			displayGrid.RowDefinitions.Clear();
 			displayGrid.ColumnDefinitions.Clear();
@@ -310,8 +365,10 @@ namespace ArkhamDisplay{
 			int lineCount = 1;
 			int firstNotDone = -1;
 
+			//getting entries from current route, and validation
 			List<Entry> routeEntries = GetEntriesForDisplay(Data.GetRoute(currentRoute));
-			if(routeEntries == null || routeEntries.Count == 0){
+			if (routeEntries == null || routeEntries.Count == 0)
+			{
 				return;
 			}
 
@@ -323,129 +380,177 @@ namespace ArkhamDisplay{
 			int lastCollectedID = -1;
 			List<int> gapSizes = new List<int>();
 
-			foreach(Entry entry in routeEntries){
+			foreach (Entry entry in routeEntries)
+			{
 				//Hardcoded bullshit
 				int mrm = minRequiredMatches;
-				if(Data.CityNGPlus && "RiddlerBeaten".Equals(entry.id)){
+				if (Data.CityNGPlus && "RiddlerBeaten".Equals(entry.id))
+				{
 					mrm = 1; //Optimal file setup does not defeat Riddler in NG
-				}else if(Data.CityNGPlus && "SS_Riddler_Hostage5_Saved".Equals(entry.id)){
+				}
+				else if (Data.CityNGPlus && "SS_Riddler_Hostage5_Saved".Equals(entry.id))
+				{
 					mrm = 3; //This appears twice for some reason after doing it in NG
 				}
 
-				if(saveParser.HasKey(entry, mrm)){
+
+				if (saveParser.HasKey(entry, mrm))
+				{
 					doneEntries++;
 					lastCollectedID = routeEntries.IndexOf(entry);
 
-					if(gapSizes.Count > 0 && gapSizes.Last() >= 10){
+					if (gapSizes.Count > 0 && gapSizes.Last() >= 10)
+					{
 						ignoreGapsForCurrentSession.Add(entry.id);
 					}
 
-					if(gapSizes.Count > 0 && gapSizes.Last() != 0 && !EntryIsIgnoreGap(entry)){
+					if (gapSizes.Count > 0 && gapSizes.Last() != 0 && !EntryIsIgnoreGap(entry))
+					{
 						gapSizes.Add(0);
 					}
 
-					if(Data.DisplayType == DisplayType.HideDone){
+					if (Data.DisplayType == DisplayType.HideDone)
+					{
 						continue;
 					}
 
 					finalEntries.Add(new FinalEntry(GetEntryName(entry), true, routeEntries.IndexOf(entry)));
-				}else{
-					if(gapSizes.Count == 0){
+				}
+				else
+				{
+					if (gapSizes.Count == 0)
+					{
 						gapSizes.Add(0);
 					}
 					gapSizes[gapSizes.Count - 1]++;
 
-					if(Data.DisplayType == DisplayType.All || Data.DisplayType == DisplayType.HideDone){
+					if (Data.DisplayType == DisplayType.All || Data.DisplayType == DisplayType.HideDone)
+					{
 						finalEntries.Add(new FinalEntry(GetEntryName(entry), false, routeEntries.IndexOf(entry), gapSizes.Count - 1));
-					}else{
+					}
+					else
+					{
 						bottomEntries.Add(new FinalEntry(GetEntryName(entry), false, routeEntries.IndexOf(entry), gapSizes.Count - 1));
 					}
 				}
 			}
 			finalEntries.AddRange(bottomEntries);
 
-			if(gapSizes != null && gapSizes.Count > 0){
+			if (gapSizes != null && gapSizes.Count > 0)
+			{
 				gapSizes.RemoveAt(gapSizes.Count - 1); //Removes trailing 0, or removes the final "gap" since it's not really a gap
 			}
 
-			if(doneEntries <= 0){
+			if (doneEntries <= 0)
+			{
 				ignoreGapsForCurrentSession.Clear();
 			}
 
 			const int maxGapSize = 10;
-			foreach (FinalEntry entry in finalEntries){
+			foreach (FinalEntry entry in finalEntries)
+			{
 				string rectStyle = "GridRectangle";
-				if(Data.WarningsForMissedEntries && finalEntries.Count > maxGapSize && !entry.done && entry.index < lastCollectedID && entry.gapIndex >= 0 && entry.gapIndex < gapSizes.Count && gapSizes[entry.gapIndex] <= maxGapSize){
+				if (Data.WarningsForMissedEntries && finalEntries.Count > maxGapSize && !entry.done && entry.index < lastCollectedID && entry.gapIndex >= 0 && entry.gapIndex < gapSizes.Count && gapSizes[entry.gapIndex] <= maxGapSize)
+				{
 					rectStyle = "WarningGridRectangle";
 				}
 
 				displayGrid.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(ROW_HEIGHT) });
 
-				Rectangle rectangle = new Rectangle{
+				Rectangle rectangle = new Rectangle
+				{
 					Style = FindResource(rectStyle) as Style
 				};
 				Grid.SetColumn(rectangle, 0);
 				Grid.SetRow(rectangle, lineCount - 1);
 				displayGrid.Children.Add(rectangle);
 
-				TextBlock txtBlock = new TextBlock{
+				TextBlock txtBlock = new TextBlock
+				{
 					Text = entry.name,
 					Style = FindResource("EntryText") as Style
 				};
+
+				//store the entry in the tag so we can access it later for the ignore list
+				txtBlock.Tag = routeEntries[entry.index];
+				ContextMenu contextMenu = new ContextMenu(); //create the context menu
+				MenuItem ignoreItem = new MenuItem
+				{
+					Header = "Add '" + entry.name +  "' to Ignore List"
+				};
+
+				ignoreItem.Click += (sender, e) => AddToIgnoreList_Click((Entry)txtBlock.Tag);
+
+				contextMenu.Items.Add(ignoreItem);
+
+				txtBlock.ContextMenu = contextMenu;
+
 				Grid.SetColumn(txtBlock, 0);
 				Grid.SetRow(txtBlock, lineCount - 1);
 				displayGrid.Children.Add(txtBlock);
 
-				rectangle = new Rectangle{
+				rectangle = new Rectangle
+				{
 					Style = FindResource(rectStyle) as Style
 				};
 				Grid.SetColumn(rectangle, 1);
 				Grid.SetRow(rectangle, lineCount - 1);
 				displayGrid.Children.Add(rectangle);
 
-				if(entry.done){
-					txtBlock = new TextBlock{
+				if (entry.done)
+				{
+					txtBlock = new TextBlock
+					{
 						Style = FindResource("DoneText") as Style
 					};
 					Grid.SetColumn(txtBlock, 1);
 					Grid.SetRow(txtBlock, lineCount - 1);
 					displayGrid.Children.Add(txtBlock);
-				}else if(firstNotDone == -1){
+				}
+				else if (firstNotDone == -1)
+				{
 					firstNotDone = lineCount;
 				}
 				lineCount++;
 			}
 
-			if(firstNotDone > -1){
+			if (firstNotDone > -1)
+			{
 				int scrollHeight = (firstNotDone - 4) * (ROW_HEIGHT);
 				gridScroll.ScrollToVerticalOffset(scrollHeight);
 			}
 			UpdatePercent(doneEntries, totalEntries);
 		}
 
-		protected virtual void UpdatePercent(int doneEntries, int totalEntries){
+		protected virtual void UpdatePercent(int doneEntries, int totalEntries)
+		{
 			double percentDone = 100.0 * doneEntries / totalEntries;
 
-			if(percentDone >= 100.0){
+			if (percentDone >= 100.0)
+			{
 				progressCounter.Text = string.Format("{0:0}", percentDone) + "%";
-			}else{
-                progressCounter.Text = string.Format("{0:0.0}", percentDone) + "%";
+			}
+			else
+			{
+				progressCounter.Text = string.Format("{0:0.0}", percentDone) + "%";
 			}
 
-                riddleCounter.Text = GetRiddleCount();
+			riddleCounter.Text = GetRiddleCount();
 
 			SetStatsWindowStats();
 		}
 
-		protected virtual void UpdateSecondaryRouteWindow(){}
+		protected virtual void UpdateSecondaryRouteWindow() { }
 
-		protected virtual string GetRiddleCount(){ return ""; }
+		protected virtual string GetRiddleCount() { return ""; }
 
 		protected virtual string GetEntryName(Entry entry) { return entry.name; }
 
-		protected virtual void UpdateUI(){
+		protected virtual void UpdateUI()
+		{
 			int value = Data.SaveIDs[(int)game];
-			switch(value){
+			switch (value)
+			{
 				case 0:
 					saveSelector0.IsChecked = true;
 					break;
@@ -463,36 +568,53 @@ namespace ArkhamDisplay{
 					break;
 			}
 
-			if(Data.ShowPercent){
+			if (Data.ShowPercent)
+			{
 				progressCounter.Visibility = Visibility.Visible;
-			}else{
+			}
+			else
+			{
 				progressCounter.Visibility = Visibility.Collapsed;
 			}
 
-			if(Data.ShowRiddleCount){
+			if (Data.ShowRiddleCount)
+			{
 				riddleCounter.Visibility = Visibility.Visible;
-			}else{
+			}
+			else
+			{
 				riddleCounter.Visibility = Visibility.Collapsed;
 			}
 
-			if(Data.AlwaysOnTop){
+			if (Data.AlwaysOnTop)
+			{
 				this.Topmost = true;
-			}else{
+			}
+			else
+			{
 				this.Topmost = false;
 			}
 		}
 
-		protected virtual void UpdatePreferences(object sender = null, RoutedEventArgs e = null){
-			if(saveSelector0.IsChecked == true && Data.SaveIDs[(int)game] != 0){
+		protected virtual void UpdatePreferences(object sender = null, RoutedEventArgs e = null)
+		{
+			if (saveSelector0.IsChecked == true && Data.SaveIDs[(int)game] != 0)
+			{
 				Data.SaveIDs[(int)game] = 0;
 				saveParser = CreateSaveParser();
-			}else if(saveSelector1.IsChecked == true && Data.SaveIDs[(int)game] != 1){
+			}
+			else if (saveSelector1.IsChecked == true && Data.SaveIDs[(int)game] != 1)
+			{
 				Data.SaveIDs[(int)game] = 1;
 				saveParser = CreateSaveParser();
-			}else if(saveSelector2.IsChecked == true && Data.SaveIDs[(int)game] != 2){
+			}
+			else if (saveSelector2.IsChecked == true && Data.SaveIDs[(int)game] != 2)
+			{
 				Data.SaveIDs[(int)game] = 2;
 				saveParser = CreateSaveParser();
-			}else if(saveSelector3.IsChecked == true && Data.SaveIDs[(int)game] != 3){
+			}
+			else if (saveSelector3.IsChecked == true && Data.SaveIDs[(int)game] != 3)
+			{
 				Data.SaveIDs[(int)game] = 3;
 				saveParser = CreateSaveParser();
 			}
@@ -502,136 +624,178 @@ namespace ArkhamDisplay{
 			RefreshRoutes();
 		}
 
-		protected void OpenRouteFolder(object sender = null, RoutedEventArgs e = null){
+		protected void OpenRouteFolder(object sender = null, RoutedEventArgs e = null)
+		{
 			System.Diagnostics.Process.Start("explorer.exe", Directory.GetCurrentDirectory() + Data.RoutePath);
 		}
 
-		protected void RefreshRoutes(object sender = null, RoutedEventArgs e = null){
+		protected void RefreshRoutes(object sender = null, RoutedEventArgs e = null)
+		{
 			bool shouldRestart = updateWorker != null && updateWorker.IsBusy;
-			if(shouldRestart){
+			if (shouldRestart)
+			{
 				Stop_Button_Click(sender, e);
 			}
 
 			Data.ReloadRoutes();
 
-			if(shouldRestart){
+			if (shouldRestart)
+			{
 				Start_Button_Click(sender, e);
 			}
 		}
 
-		protected void CheckForUpdates(object sender = null, RoutedEventArgs e = null){
+		protected void CheckForUpdates(object sender = null, RoutedEventArgs e = null)
+		{
 			bool programHasUpdate = false;
-			try{
+			try
+			{
 				var client = new Octokit.GitHubClient(new Octokit.ProductHeaderValue(Data.GitRepoName));
 				var latestRelease = client.Repository.Release.GetLatest(Data.GitRepoOwner, Data.GitRepoName).Result;
-				if(latestRelease.TagName != "v" + Data.VersionStr){
+				if (latestRelease.TagName != "v" + Data.VersionStr)
+				{
 					programHasUpdate = true;
 				}
-			}catch(AggregateException aggregate){
-				aggregate.Handle(ex => {
-					if(ex is Octokit.RateLimitExceededException || ex is Octokit.SecondaryRateLimitExceededException){
+			}
+			catch (AggregateException aggregate)
+			{
+				aggregate.Handle(ex =>
+				{
+					if (ex is Octokit.RateLimitExceededException || ex is Octokit.SecondaryRateLimitExceededException)
+					{
 						MessageBox.Show("GitHub rate limit exceeded - please try again later.", "Error");
-					}else{
+					}
+					else
+					{
 						MessageBox.Show("Unknown error occurred while checking for updates. Please send a screenshot of this error message to the developers, and try again later. \n\nException Type: " + ex.GetType().ToString() + "\nMessage: " + ex.Message, "Error");
 					}
 					return true;
 				});
 
 				return;
-			}catch(Exception ex){
+			}
+			catch (Exception ex)
+			{
 				MessageBox.Show("Unknown error occurred while checking for updates. Please send a screenshot of this error message to the developers, and try again later. \n\nException Type: " + ex.GetType().ToString() + "\nMessage: " + ex.Message, "Error");
 				return;
 			}
 
-			if(programHasUpdate){
-                MessageBoxResult result = MessageBox.Show("A new version of the route tracker is available. Would you like to download it?", "Updates Available", MessageBoxButton.YesNo);
-				if(result == MessageBoxResult.Yes){
-                    System.Diagnostics.Process.Start("explorer", Data.GitReleasesURL);
+			if (programHasUpdate)
+			{
+				MessageBoxResult result = MessageBox.Show("A new version of the route tracker is available. Would you like to download it?", "Updates Available", MessageBoxButton.YesNo);
+				if (result == MessageBoxResult.Yes)
+				{
+					System.Diagnostics.Process.Start("explorer", Data.GitReleasesURL);
 					return;
-                }
-            }
+				}
+			}
 
 			CheckForUpdatedRoutes(sender, e);
 		}
 
-        protected void CheckForUpdatedRoutes(object sender = null, RoutedEventArgs e = null){
+		protected void CheckForUpdatedRoutes(object sender = null, RoutedEventArgs e = null)
+		{
 			List<string> routesWithUpdates = new List<string>();
 			Dictionary<string, string> routeFileData = new Dictionary<string, string>();
 
-			try{
+			try
+			{
 				var client = new Octokit.GitHubClient(new Octokit.ProductHeaderValue(Data.GitRepoName));
 				var routes = client.Repository.Content.GetAllContents(Data.GitRepoOwner, Data.GitRepoName, Data.GitRoutesPath).Result;
-				foreach(var r in routes){
+				foreach (var r in routes)
+				{
 					var rawData = client.Repository.Content.GetRawContent(Data.GitRepoOwner, Data.GitRepoName, r.Path).Result;
 
 					string dataString = System.Text.Encoding.UTF8.GetString(rawData);
 					dataString = dataString.Replace("\n", "\r\n"); //Replace Unix line endings with Windows line endings
 					routeFileData.Add(r.Name, dataString);
-					
+
 					var split = Regex.Split(dataString, @"(?<=[\n])").ToList();
 
-					if(!Data.HasRouteFile(r.Name)){
+					if (!Data.HasRouteFile(r.Name))
+					{
 						routesWithUpdates.Add(r.Name);
 						continue;
 					}
 
-					if(r.Name.Contains("json")){
-						if(Utils.GetSHA1Hash("Routes/" + r.Name) != Utils.GetSHA1Hash(split)){
+					if (r.Name.Contains("json"))
+					{
+						if (Utils.GetSHA1Hash("Routes/" + r.Name) != Utils.GetSHA1Hash(split))
+						{
 							routesWithUpdates.Add(r.Name);
 							continue;
 						}
-					}else{
+					}
+					else
+					{
 						Route r1 = new Route("Routes/" + r.Name);
 						Route r2 = new Route(null, split);
-						if(r1.IsEqual(r2) == false){
+						if (r1.IsEqual(r2) == false)
+						{
 							routesWithUpdates.Add(r.Name);
 							continue;
 						}
 					}
 
-					
+
 				}
-			}catch(AggregateException aggregate){
-				aggregate.Handle(ex => {
-					if(ex is Octokit.RateLimitExceededException || ex is Octokit.SecondaryRateLimitExceededException){
+			}
+			catch (AggregateException aggregate)
+			{
+				aggregate.Handle(ex =>
+				{
+					if (ex is Octokit.RateLimitExceededException || ex is Octokit.SecondaryRateLimitExceededException)
+					{
 						MessageBox.Show("GitHub rate limit exceeded - please try again later.", "Error");
-					}else{
+					}
+					else
+					{
 						MessageBox.Show("Unknown error occurred while checking for updates. Please send a screenshot of this error message to the developers, and try again later. \n\nException Type: " + ex.GetType().ToString() + "\nMessage: " + ex.Message, "Error");
 					}
 					return true;
 				});
 
 				return;
-			}catch(Exception ex){
+			}
+			catch (Exception ex)
+			{
 				MessageBox.Show("Unknown error occurred while checking for updates. Please send a screenshot of this error message to the developers, and try again later. \n\nException Type: " + ex.GetType().ToString() + "\nMessage: " + ex.Message, "Error");
 				return;
 			}
 
 			MessageBoxResult result = MessageBoxResult.No;
-			if(routesWithUpdates.Count > 0){
+			if (routesWithUpdates.Count > 0)
+			{
 				result = MessageBox.Show("The following routes have updates. Would you like to download? Any custom changes will be lost.\n" + Utils.ListToNewlinedString(routesWithUpdates), "Updates Available", MessageBoxButton.YesNo);
-			}else{
+			}
+			else
+			{
 				MessageBox.Show("Routes are already up to date.");
 			}
 
-			try{
-				if(result == MessageBoxResult.Yes){
+			try
+			{
+				if (result == MessageBoxResult.Yes)
+				{
 					string backupDir = Data.AbsoluteRoutePath + "Backups\\";
 					System.IO.Directory.CreateDirectory(backupDir);
 
-					foreach(var v in routeFileData){
-						if(routesWithUpdates.Contains(v.Key)){
+					foreach (var v in routeFileData)
+					{
+						if (routesWithUpdates.Contains(v.Key))
+						{
 							string curRoutePath = Data.AbsoluteRoutePath + v.Key;
-							string backupPath = backupDir +  Utils.AppendTimestampToFileName(v.Key);
+							string backupPath = backupDir + Utils.AppendTimestampToFileName(v.Key);
 
-							if(System.IO.File.Exists(curRoutePath)){
+							if (System.IO.File.Exists(curRoutePath))
+							{
 								//Make a copy of the old version in case the user wants to restore it
 								FileStream fs = System.IO.File.Create(backupPath);
 								fs.Close();
 
 								System.IO.File.Copy(curRoutePath, backupPath, true);
 							}
-							
+
 							System.IO.File.WriteAllText(curRoutePath, v.Value);
 						}
 					}
@@ -639,15 +803,19 @@ namespace ArkhamDisplay{
 					RefreshRoutes();
 					MessageBox.Show("Routes successfully updated.");
 				}
-			}catch(System.IO.IOException){
+			}
+			catch (System.IO.IOException)
+			{
 				MessageBox.Show("An error occurred while updating the route files!");
 			}
 		}
 
-		protected bool OpenSavePathWindowAndGetResult(){
+		protected bool OpenSavePathWindowAndGetResult()
+		{
 			SetSavePathWindow wnd = new SetSavePathWindow(game);
 			wnd.Activate();
-			if(wnd.ShowDialog() == true){
+			if (wnd.ShowDialog() == true)
+			{
 				UpdateUI();
 				return true;
 			}
@@ -655,27 +823,34 @@ namespace ArkhamDisplay{
 			return false;
 		}
 
-		protected void OpenSavePathWindow(object sender = null, RoutedEventArgs e = null){
+		protected void OpenSavePathWindow(object sender = null, RoutedEventArgs e = null)
+		{
 			SetSavePathWindow wnd = new SetSavePathWindow(game);
 			wnd.Activate();
-			if(wnd.ShowDialog() == true){
+			if (wnd.ShowDialog() == true)
+			{
 				UpdateUI();
 			}
 		}
 
-		private void KillWindow(BaseWindow newWindow, Game newGame, MenuItem sender){
-			if(newWindow != null){
-				if(newWindow.IsClosed){
+		private void KillWindow(BaseWindow newWindow, Game newGame, MenuItem sender)
+		{
+			if (newWindow != null)
+			{
+				if (newWindow.IsClosed)
+				{
 					newWindow.Close();
 					sender.IsChecked = false;
 					Data.SelectedGame = game;
 					return;
 				}
 
-				if(string.IsNullOrWhiteSpace(Data.SaveLocations[(int)newGame])){
+				if (string.IsNullOrWhiteSpace(Data.SaveLocations[(int)newGame]))
+				{
 					Window wnd = new SetSavePathWindow(newGame);
 					wnd.Activate();
-					if(wnd.ShowDialog() == false){
+					if (wnd.ShowDialog() == false)
+					{
 						newWindow.Close();
 						sender.IsChecked = false;
 						Data.SelectedGame = game;
@@ -690,43 +865,63 @@ namespace ArkhamDisplay{
 			Close();
 		}
 
-		protected void PrefMenuItem_Click(object sender, RoutedEventArgs e){
+		protected void PrefMenuItem_Click(object sender, RoutedEventArgs e)
+		{
 			PreferencesWindow wnd = new PreferencesWindow();
 			wnd.Activate();
-			if(wnd.ShowDialog() == true){
+			if (wnd.ShowDialog() == true)
+			{
 				RefreshRoutes(); //This is just an easy way to refresh the grid
 				UpdateUI();
 			}
 		}
 
-		protected virtual void SwitchGameWindow(object sender, RoutedEventArgs e){
-			if(sender == null || sender is MenuItem == false){
+		protected virtual void SwitchGameWindow(object sender, RoutedEventArgs e)
+		{
+			if (sender == null || sender is MenuItem == false)
+			{
 				return;
 			}
 
-			if(sender == asylumMenuItem && game != Game.Asylum){
+			if (sender == asylumMenuItem && game != Game.Asylum)
+			{
 				KillWindow(new AsylumWindow(), Game.Asylum, sender as MenuItem);
-			}else if(sender == cityMenuItem && game != Game.City){
+			}
+			else if (sender == cityMenuItem && game != Game.City)
+			{
 				KillWindow(new CityWindow(), Game.City, sender as MenuItem);
-			}else if(sender == originsMenuItem && game != Game.Origins){
+			}
+			else if (sender == originsMenuItem && game != Game.Origins)
+			{
 				KillWindow(new OriginsWindow(), Game.Origins, sender as MenuItem);
-			}else if(sender == knightMenuItem && game != Game.Knight){
+			}
+			else if (sender == knightMenuItem && game != Game.Knight)
+			{
 				KillWindow(new KnightWindow(), Game.Knight, sender as MenuItem);
-			}else{
+			}
+			else
+			{
 				(sender as MenuItem).IsChecked = true;
 			}
 		}
 
-		protected virtual void OpenStatsWindow(object sender = null, RoutedEventArgs e = null){
-			if(statsWindow != null){
-				if(statsWindow.IsVisible && (statsWindow.WindowState == WindowState.Normal || statsWindow.WindowState == WindowState.Maximized)){
+		protected virtual void OpenStatsWindow(object sender = null, RoutedEventArgs e = null)
+		{
+			if (statsWindow != null)
+			{
+				if (statsWindow.IsVisible && (statsWindow.WindowState == WindowState.Normal || statsWindow.WindowState == WindowState.Maximized))
+				{
 					statsWindow.Focus();
 					return;
-				}else if(statsWindow.IsVisible && statsWindow.WindowState == WindowState.Minimized){
+				}
+				else if (statsWindow.IsVisible && statsWindow.WindowState == WindowState.Minimized)
+				{
 					statsWindow.WindowState = WindowState.Normal;
 					statsWindow.Focus();
 					return;
-				}else{
+				}
+				else
+				{
 					statsWindow.Close();
 					statsWindow = null;
 				}
@@ -737,16 +932,31 @@ namespace ArkhamDisplay{
 			statsWindow.Show();
 			SetStatsWindowStats();
 
-			if(!Data.StatsWindowOpen){
+			if (!Data.StatsWindowOpen)
+			{
 				Data.StatsWindowOpen = true;
 				Data.Save();
 			}
 		}
 
-		protected virtual void SetStatsWindowStats(){
-			if(statsWindow != null && progressCounter != null && riddleCounter != null){
+		protected virtual void SetStatsWindowStats()
+		{
+			if (statsWindow != null && progressCounter != null && riddleCounter != null)
+			{
 				statsWindow.SetStats(progressCounter.Text, riddleCounter.Text + " riddles");
 			}
+		}
+		private void AddToIgnoreList_Click(Entry entry) //the button trigger on click
+        {
+			
+			AddToIgnoreList(entry);
+			//MessageBox.Show($"{entry.name} added to ignore list.");
+        }
+		public void AddToIgnoreList(Entry entry) //clearing of the ignore list happens in the PreferenceWindow
+		{
+			List<Entry> workingList = Data.IgnoreList;
+			workingList.Add(entry);
+			Data.IgnoreList = workingList; //can only get or set values stored in data
 		}
 	}
 }

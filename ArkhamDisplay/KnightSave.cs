@@ -29,8 +29,10 @@ namespace ArkhamDisplay{
 			return true;
 		}
 
+		//this determines how many times an entry's id needs to appear in the save to actually mean it is completed
 		public override bool HasKey(Entry entry, int requiredMatches)
 		{
+
 			requiredMatches = 1;
 			if ("NG+".Equals(entry.metadata))
 			{
@@ -51,7 +53,12 @@ namespace ArkhamDisplay{
 			{
 				requiredMatches = 2;
 			}
-			return base.HasKey(entry, requiredMatches);
+			if (Data.IgnoreList.Contains(entry)) //process ignore list
+			{
+				requiredMatches = 0; //guarantee that it is treated as complete
+			}
+
+			return base.HasKey(entry, requiredMatches); //checks the save for the number of times the id is present, then returns a bool indicating its completeness
 		}
 
 		protected override string GetFile(){

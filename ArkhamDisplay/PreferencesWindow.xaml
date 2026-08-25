@@ -4,7 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 		mc:Ignorable="d"
-        Title="Preferences" Height="300" Width="300"
+        Title="Preferences" Height="400" Width="300"
 		ResizeMode="NoResize"
     Topmost="True">
 	<Grid>
@@ -23,9 +23,17 @@
 		<CheckBox Name="ShowProgressCheckbox"	Content="Show % Completion"	Grid.Row="1" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,10,0,0" IsChecked="True"/>
 		<CheckBox Name="ShowRiddlesCheckbox"	Content="Show Riddle Count"	Grid.Row="1" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,28,0,0" IsChecked="True"/>
 		<CheckBox Name="ShowWarningsCheckbox"	Content="Highlight Missed Entries"	Grid.Row="1" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,48,0,0" IsChecked="True"/>
-		<CheckBox Name="DarkThemeCheckbox"		Content="Dark Mode"			Grid.Row="1" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,68,0,0" IsChecked="True"/>
-    <CheckBox Name="AlwaysOnTopCheckbox"		Content="Always Keep Main Window On Top"			Grid.Row="1" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,88,0,0" IsChecked="False"/>
-
+		<CheckBox Name="ShowImagesCheckbox"	Content="Show Image Hints If Available"	Grid.Row="1" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,68,0,0" IsChecked="True"/>
+		<CheckBox Name="DarkThemeCheckbox"		Content="Dark Mode"			Grid.Row="1" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,88,0,0" IsChecked="True"/>
+    	<CheckBox Name="AlwaysOnTopCheckbox"		Content="Always Keep Main Window On Top"			Grid.Row="1" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,108,0,0" IsChecked="False"/>
+		<Button Name="ResetIgnoreListButton"
+			Content="Reset Ignore List"
+			Grid.Row="1"
+			HorizontalAlignment="Left"
+			VerticalAlignment="Top"
+			Margin="10,140,0,0"
+			Width="120"
+			Click="resetIgnoreList"/>
 		<RadioButton Name="ShowAllButton"	Content="Show all entries"				Grid.Row="2" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,10,0,0" IsChecked="True"/>
 		<RadioButton Name="SortDoneButton"	Content="Sort completed entries to top"	Grid.Row="2" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,30,0,0" IsChecked="False"/>
 		<RadioButton Name="HideDoneButton"	Content="Hide completed entries"		Grid.Row="2" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,50,0,0" IsChecked="False"/>

@@ -1,4 +1,7 @@
-﻿using System.Windows;
+﻿
+
+using System.Collections.Generic;
+using System.Windows;
 
 namespace ArkhamDisplay{
 	public partial class PreferencesWindow : Window{
@@ -22,6 +25,7 @@ namespace ArkhamDisplay{
 			ShowProgressCheckbox.IsChecked = Data.ShowPercent;
 			ShowRiddlesCheckbox.IsChecked = Data.ShowRiddleCount;
 			ShowWarningsCheckbox.IsChecked = Data.WarningsForMissedEntries;
+			ShowImagesCheckbox.IsChecked = Data.ShowImages;
 			AlwaysOnTopCheckbox.IsChecked = Data.AlwaysOnTop;
 
 			if(Data.UseTheme() == Theme.Dark){
@@ -54,6 +58,7 @@ namespace ArkhamDisplay{
 
 			Data.ShowPercent = ShowProgressCheckbox.IsChecked ?? false;
 			Data.ShowRiddleCount = ShowRiddlesCheckbox.IsChecked ?? false;
+			Data.ShowImages = ShowImagesCheckbox.IsChecked ?? false;
 			Data.WarningsForMissedEntries = ShowWarningsCheckbox.IsChecked ?? false;
 			Data.AlwaysOnTop = AlwaysOnTopCheckbox.IsChecked ?? false;
 
@@ -80,6 +85,11 @@ namespace ArkhamDisplay{
 		private void CancelButton_Click(object sender, RoutedEventArgs e){
 			DialogResult = false;
 			Close();
+		}
+
+		private void resetIgnoreList(object sender, RoutedEventArgs e)
+		{
+			Data.IgnoreList = new List<Entry>();
 		}
 	}
 }

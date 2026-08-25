@@ -45,6 +45,7 @@ namespace ArkhamDisplay{
 
 		public volatile bool showPercent = true;
 		public volatile bool showRiddleCount = true;
+		public volatile bool showImages = true;
 		public volatile int refreshRateInMS = 1000;
 		public volatile DisplayType displayType = DisplayType.SortDoneToTop;
 		public volatile bool warningsForMissedEntries = true;
@@ -59,6 +60,7 @@ namespace ArkhamDisplay{
 		public volatile bool knight120 = false;
 		public volatile bool knight240 = false;
 		public volatile bool knightMoF = false;
+		public volatile List<Entry> ignoreList;
 	}
 
 	public class Data{
@@ -89,6 +91,7 @@ namespace ArkhamDisplay{
 		public static double SecondaryRowHeight { get { return (double)data.secondaryRowHeight; } set { data.secondaryRowHeight = (float)value; } }
 		public static bool StatsWindowOpen { get { return data.statsWindowOpen; } set { data.statsWindowOpen = value; } }
 		public static bool ShowPercent { get { return data.showPercent; } set { data.showPercent = value; } }
+		public static bool ShowImages { get { return data.showImages; } set { data.showImages = value; } }
 		public static bool ShowRiddleCount { get { return data.showRiddleCount; } set { data.showRiddleCount = value; } }
 		public static int RefreshRate { get { return data.refreshRateInMS; } set { data.refreshRateInMS = value; } }
 		public static DisplayType DisplayType { get { return data.displayType; } set { data.displayType = value; } }
@@ -104,6 +107,7 @@ namespace ArkhamDisplay{
 
 		public static bool Knight240 { get { return data.knight240; } set { data.knight240 = value; } }
 		public static bool KnightMoF {  get { return data.knightMoF;  } set { data.knightMoF = value; } }
+		public static List<Entry> IgnoreList { get {return data.ignoreList; } set { data.ignoreList = value;}}
 
 		public static void Load(){
 			if(!System.IO.File.Exists(settingsFileName)){

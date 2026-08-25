@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security;
+using System.Windows.Controls;
 
 namespace ArkhamDisplay{
 	public class Entry{
@@ -9,13 +11,15 @@ namespace ArkhamDisplay{
 		public string id;
 		public string alternateID;
 		public string metadata;
+		public string image;
 
-		public Entry(string name, string type, string id, string alternateID = null, string metadata = null){
+		public Entry(string name, string type, string id, string alternateID = null, string metadata = null, string image = null ){
 			this.name = name;
 			this.type = type;
 			this.id = id;
 			this.alternateID = alternateID;
 			this.metadata = metadata;
+			this.image = image;
 		}
 
 		public bool IsType(string type_){
@@ -50,7 +54,7 @@ namespace ArkhamDisplay{
 				}
 
 				Utils.RetryFileIO(() => {
-					allLines = System.IO.File.ReadAllLines(fileName).Skip(1);
+					allLines = System.IO.File.ReadAllLines(fileName).Skip(1); //puts all lines into allLines
 				});
 			}else if(data != null){
 				allLines = data.Skip(1);
@@ -69,11 +73,15 @@ namespace ArkhamDisplay{
 
 				string optionalAltID = null;
 				string optionalMetaData = null;
+				string optionalImageURL = null;
 				if(lineComponents.Length >= 4){
 					optionalAltID = lineComponents[3].Trim();
 				}
 				if(lineComponents.Length >= 5){
 					optionalMetaData = lineComponents[4].Trim();
+				}
+				if(lineComponents.Length >= 6){
+					optionalImageURL = lineComponents[5].Trim();
 				}
 
 				entries.Add(new Entry(
@@ -81,7 +89,8 @@ namespace ArkhamDisplay{
 					lineComponents[1].Trim(),
 					lineComponents[2].Trim(),
 					optionalAltID,
-					optionalMetaData
+					optionalMetaData,
+					optionalImageURL
 				));
 			}
 		}
