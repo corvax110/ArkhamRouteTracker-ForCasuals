@@ -1,0 +1,128 @@
+<Window x:Class="ArkhamDisplay.CacheConfirmationWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:ArkhamDisplay"
+        mc:Ignorable="d"
+        Title="Cache Images"
+        Height="180"
+        Width="500"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize">
+<Grid Name="ParentGrid">
+    <Grid Name="CacheConfirmation">
+        <TextBlock
+            Name="CacheConfirmationText"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Top"
+            Margin="20,15,20,0"
+            Text="Would you like to cache all images?"
+            TextWrapping="Wrap"
+            TextAlignment="Center"
+            FontSize="16"/>
+        <StackPanel
+            Grid.Row="1"
+            Orientation="Horizontal"
+            HorizontalAlignment="Center"
+            Margin="0,55,0,20">
+
+        <Button
+            Name="YesButton"
+            Width="75"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Top"
+            Margin="5,0"
+            Content="Yes"
+            Click="YesButton_Click"/>
+
+        <Button
+            Name="NoButton"
+            Width="75"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Top"
+            Margin="5,0"
+            Content="No"
+            Click="NoButton_Click"/>
+        </StackPanel>
+
+        <TextBlock
+            Name="CacheClearedConfirmation"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Top"
+            Margin="0,90,0,0"
+            Text="Cache Cleared"
+            TextWrapping="Wrap"
+            TextAlignment="Center"
+            Visibility="Collapsed"
+            FontStyle="Italic"
+            FontSize="16"/>
+        <Button
+            Name="ClearCacheButton"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Top"
+            Margin="0,110,0,0"
+            Content="Clear The Image Cache"
+            Click="ClearCache_Click"/>
+
+    </Grid>
+    <Grid Name="CacheProgress" Margin="25" Visibility="Collapsed">
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Title -->
+        <TextBlock Name="TitleText"
+                   Grid.Row="0"
+                   Text="Caching Images..."
+                   FontSize="28"
+                   FontWeight="Bold"
+                   HorizontalAlignment="Center"
+                   Margin="0,5,0,20"/>
+
+        <!-- Status area -->
+        <StackPanel Grid.Row="1"
+                    VerticalAlignment="Center">
+
+            <TextBlock Name="StatusText"
+                       Text="Preparing to cache images..."
+                       FontSize="16"
+                       HorizontalAlignment="Left"
+                       TextAlignment="Left"
+                       TextWrapping="NoWrap"
+                       Margin="0,0,0,15"/>
+
+            <!-- Progress bar -->
+            <ProgressBar Name="CacheProgressBar"
+                         Height="25"
+                         Minimum="0"
+                         Maximum="100"
+                         Value="0"
+                         Margin="0,0,0,10"/>
+
+            <!-- Count -->
+            <TextBlock Name="ProgressCountText"
+                       Text="0 / 0 images cached"
+                       FontSize="16"
+                       HorizontalAlignment="Center"
+                       FontWeight="SemiBold"/>
+
+        </StackPanel>
+
+        <!-- Cancel button -->
+        <Button Name="CancelButton"
+                Grid.Row="3"
+                Content="Cancel"
+                Width="90"
+                Height="30"
+                HorizontalAlignment="Center"
+                Margin="0,15,0,0"
+                Click="CancelButton_Click"/>
+
+    </Grid>
+</Grid>
+</Window>

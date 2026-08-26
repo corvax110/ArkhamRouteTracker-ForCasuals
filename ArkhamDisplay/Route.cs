@@ -16,7 +16,7 @@ namespace ArkhamDisplay{
 		public Entry(string name, string type, string id, string alternateID = null, string metadata = null, string image = null ){
 			this.name = name;
 			this.type = type;
-			this.id = id;
+			this.id = id; //saveField
 			this.alternateID = alternateID;
 			this.metadata = metadata;
 			this.image = image;
