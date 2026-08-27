@@ -7,14 +7,12 @@ My changes are done because i am an insane person and follow along the speedrun 
 
 Things added:
 
--Updated the Knight240 route file so use the new domain name for its image links
+-Updated the Knight240 route file to fix image links
 
--Added a toggle in preference window, that enables the display of the images of the current and next steps to the right of the route list if they are available (Only implemented in Arkham Knight)
+-Added Image Display functionality along with an Image cache
 
-  ---pulls image link from the 6th column
+-Image Cache has a dedicated management window, can cache all images of a route at once
   
-  ---has a built in cache that stores the image on a subfolder, this gets cleared on opening the program
-  
--added an option to right click an entry in the list to add it to an ignore list (treated as complete)
+-added Ignore List, User can right click an entry in the list to add it to an ignore list (treated as complete)
 
   ---can go into preferences to find a Clear Ignore List button
