@@ -57,6 +57,8 @@ namespace ArkhamDisplay
 			{
 				currentRoute = "KnightDefault";
 			}
+
+			Data.CurrentRoute = currentRoute;
 		}
 
 		protected override void UpdateUI()
@@ -94,6 +96,7 @@ namespace ArkhamDisplay
 				TwoFortyPercentMenuItem.IsChecked = false;
 				MatterOfFamilyMenuItem.IsChecked = false;
 			}
+			
 
 			// TODO: We can probably get rid of this
 			if (NGPlusMenuItem.IsChecked)
@@ -115,35 +118,47 @@ namespace ArkhamDisplay
 
 		protected override void UpdatePercent(int doneEntries, int totalEntries)
 		{
-			double percentDone = 100.0 * doneEntries / totalEntries;
-			if (TwoFortyPercentMenuItem.IsChecked)
-			{
-				// TODO: This is just a hack. Ideally, we'd know the number of rows that are NG+
-				// and scale that to be 120%, while the remaining would scale to 120%. However,
-				// that's too much work for me to bother.
-				int newGameEntries = 532;
-				if (doneEntries <= newGameEntries)
-				{
-					// The number of newGame entries should be equal to 119%
-					percentDone = 119.0 * doneEntries / newGameEntries;
-				}
-				else
-				{
-					// The remaining entries (totalEntries - newGameEntries) should be equal to 121%
-					percentDone = 119.0 + (doneEntries - newGameEntries) * 121 / (totalEntries - newGameEntries);
-				}
-			}
+			base.UpdatePercent(doneEntries, totalEntries);
+			//removing this for two reasons:
+			//1) I'd rather see the progress through the current route im following
+			//2) I get that 240%'s whole thing is the save file percent being stupidly large and therefore fun
+			//   but this hack implemented here does not even get the correct percentage of the savefile
+			//   and i dont want to reverse engineer how the game calculates it, as that involves quiting out many many times
+			//   i suspect the game has specific checks that are worth a flat percentage rather than an actual complete/total calculation
+			//   for example: each Super villan in season of infamy is worth 5%, but only when their whole questline is done, none of the steps add any percentage
+			//   this might be unique to the dlc missions, but i dont wanna go through all the testing needed for the base game
+			// double percentDone = 100.0 * doneEntries / totalEntries;
+			// if (TwoFortyPercentMenuItem.IsChecked)
+			// {
+			// 	// TODO: This is just a hack. Ideally, we'd know the number of rows that are NG+
+			// 	// and scale that to be 120%, while the remaining would scale to 120%. However,
+			// 	// that's too much work for me to bother.
+			// 	int newGameEntries = 532;
+			// 	MessageBox.Show("Done: " + doneEntries + "\nTotal: " + totalEntries);
 
-			if (percentDone >= 100.0 && !Data.Knight240)
-			{
-				progressCounter.Text = string.Format("{0:0}", percentDone) + "%";
-			}
-			else
-			{
-				progressCounter.Text = string.Format("{0:0.0}", percentDone) + "%";
-			}
+			// 	if (doneEntries <= newGameEntries)
+			// 	{
+			// 		// The number of newGame entries should be equal to 119%
+			// 		percentDone = 119.0 * doneEntries / newGameEntries;
+			// 	}
+			// 	else
+			// 	{
+			// 		// The remaining entries (totalEntries - newGameEntries) should be equal to 121%
+			// 		percentDone = 119.0 + (doneEntries - newGameEntries) * 121 / (totalEntries - newGameEntries);
+			// 	}
+			// 	//percentDone = get240Completion();
+			// }
 
-			riddleCounter.Text = GetRiddleCount();
+			// if (percentDone >= 100.0 && !Data.Knight240)
+			// {
+			// 	progressCounter.Text = string.Format("{0:0}", percentDone) + "%";
+			// }
+			// else
+			// {
+			// 	progressCounter.Text = string.Format("{0:0.0}", percentDone) + "%";
+			// }
+
+			// riddleCounter.Text = GetRiddleCount();
 		}
 
 		protected override string GetRiddleCount()
@@ -174,6 +189,10 @@ namespace ArkhamDisplay
 			//check for the next 2 incomplete steps, aka the current and next steps
 			for (int i = 0; i < routeEntries.Count; i++)
 			{
+				if (Data.IgnoreTypes.Contains(currentRoute + routeEntries[i].type)) //respect ignored categories
+				{
+					continue;
+				}
 				if (!saveParser.HasKey(routeEntries[i], minRequiredMatches))
 				{
 					if (currentStepIndex == -1)
@@ -203,6 +222,7 @@ namespace ArkhamDisplay
 			//print current image
 			await grabImage(routeEntries[currentStepIndex], NextStepText, NextStepImage);
 			NextStepIdentifierText.Visibility = Visibility.Visible;
+			NextStepIdentifierText.Text = routeEntries[currentStepIndex].name + ":";
 
 			//check and print second image
 			if (nextStepIndex == -1) //if this triggers, it means there is only 1 incomplete step left
@@ -215,6 +235,7 @@ namespace ArkhamDisplay
 			else //shouldn't call this without checking the first step
 			{
 				await grabImage(routeEntries[nextStepIndex], NextNextStepText, NextNextStepImage);
+				NextNextStepIdentifierText.Text = routeEntries[nextStepIndex].name + ":";
 				NextStepIdentifierText.Visibility = Visibility.Visible;     //if you have the second one you should have the first for readability
 				NextNextStepIdentifierText.Visibility = Visibility.Visible;
 				NextStepSeparator.Visibility = Visibility.Visible;
@@ -223,6 +244,7 @@ namespace ArkhamDisplay
 		
 		private async Task grabImage(Entry entry, TextBlock tempTextBlock, Image tempImage)
 		{
+			string routeImageCacheDirectory = System.IO.Path.Combine(imageCacheDirectory, getGameName());
 			tempTextBlock.Text = entry.name;
 			if (string.IsNullOrWhiteSpace(entry.image))
 			{
@@ -232,7 +254,7 @@ namespace ArkhamDisplay
 			}
 			try
 			{
-				Directory.CreateDirectory(imageCacheDirectory);
+				Directory.CreateDirectory(routeImageCacheDirectory);
 				string hash;
 				using (SHA256 sha = SHA256.Create())
 				{
@@ -245,7 +267,7 @@ namespace ArkhamDisplay
 				{
 					extension = ".img";
 				}
-				string cachePath = System.IO.Path.Combine(imageCacheDirectory, hash + extension);
+				string cachePath = System.IO.Path.Combine(routeImageCacheDirectory, hash + extension);
 				if (!File.Exists(cachePath))
 				{
 					byte[] imageData = await imageClient.GetByteArrayAsync(entry.image);
@@ -269,7 +291,7 @@ namespace ArkhamDisplay
 		private void CacheImagesButton_Click(object sender, RoutedEventArgs e)
 		{
 			List<Entry> routeEntries = GetEntriesForDisplay(Data.GetRoute(currentRoute));
-			CacheConfirmationWindow confirmationWindow = new CacheConfirmationWindow(routeEntries);
+			CacheConfirmationWindow confirmationWindow = new CacheConfirmationWindow(routeEntries, currentRoute, getGameName());
 			confirmationWindow.Owner = this;
 			bool? result = confirmationWindow.ShowDialog();
 			if (result == true)

@@ -12,14 +12,27 @@ namespace ArkhamDisplay{
 		public string alternateID;
 		public string metadata;
 		public string image;
+		public string routeName = "";
 
-		public Entry(string name, string type, string id, string alternateID = null, string metadata = null, string image = null ){
+		public Entry()
+		{
+		}
+		public Entry(string name, string type, string id, string alternateID = null, string metadata = null, string image = null){
 			this.name = name;
-			this.type = type;
+			this.type = type; //category
 			this.id = id; //saveField
 			this.alternateID = alternateID;
 			this.metadata = metadata;
 			this.image = image;
+		}
+		public Entry(Entry entry){
+			name = entry.name;
+			type = entry.type; //category
+			id = entry.id; //saveField
+			alternateID = entry.alternateID;
+			metadata = entry.metadata;
+			image = entry.image;
+			routeName = entry.routeName;
 		}
 
 		public bool IsType(string type_){

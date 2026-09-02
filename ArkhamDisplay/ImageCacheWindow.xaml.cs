@@ -16,13 +16,17 @@ namespace ArkhamDisplay
 		private List<Entry> failedEntries = new List<Entry>(); 
         private CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
 		private bool isCaching = false;
+		private readonly string currentRoute = "";
+		private readonly string currentGame = "";
 
         private static readonly HttpClient imageClient = new HttpClient();
 		private readonly string imageCacheDirectory = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "ImageCache");
-        public CacheConfirmationWindow(List<Entry> routeEntries)
+        public CacheConfirmationWindow(List<Entry> routeEntries, String currentRoute, String currentGame)
         {
             InitializeComponent();
             this.routeEntries = routeEntries;
+			this.currentRoute = currentRoute;
+			this.currentGame = currentGame;
         }
 
         private async void YesButton_Click(object sender, RoutedEventArgs e)
@@ -48,15 +52,33 @@ namespace ArkhamDisplay
         {
             DialogResult = false;
         }
-		private void ClearCache_Click(object sender, RoutedEventArgs e)
+		private void ClearCurrentCache_Click(object sender, RoutedEventArgs e)
+		{
+			string routeImageCacheDirectory = System.IO.Path.Combine(imageCacheDirectory, currentGame);
+			if (!Directory.Exists(routeImageCacheDirectory))
+			{
+				CacheClearedConfirmation.Text = "No Cache Directory";
+				CacheClearQuestion.Visibility = Visibility.Collapsed;
+				CacheClearedConfirmation.Visibility = Visibility.Visible;
+				return;
+			}
+			Directory.Delete(routeImageCacheDirectory, true);
+			CacheClearedConfirmation.Text = currentGame + " Cache Cleared";
+			CacheClearQuestion.Visibility = Visibility.Collapsed;
+			CacheClearedConfirmation.Visibility = Visibility.Visible;
+		}
+		private void ClearAllCache_Click(object sender, RoutedEventArgs e)
 		{
 			if (!Directory.Exists(imageCacheDirectory))
 			{
 				CacheClearedConfirmation.Text = "No Cache Directory";
+				CacheClearQuestion.Visibility = Visibility.Collapsed;
 				CacheClearedConfirmation.Visibility = Visibility.Visible;
 				return;
 			}
 			Directory.Delete(imageCacheDirectory, true);
+			CacheClearedConfirmation.Text = "All Caches Cleared";
+			CacheClearQuestion.Visibility = Visibility.Collapsed;
 			CacheClearedConfirmation.Visibility = Visibility.Visible;
 		}
 
@@ -74,14 +96,15 @@ namespace ArkhamDisplay
         }
         private async Task CacheAllImages()
 		{
-			Directory.CreateDirectory(imageCacheDirectory);
+			string routeImageCacheDirectory = System.IO.Path.Combine(imageCacheDirectory, currentGame);
+			Directory.CreateDirectory(routeImageCacheDirectory);
 			failedEntries.Clear();
 			// create the path for the JSON file report
 			// containing the hash/filename and original URL
 			string jsonPath =
 				System.IO.Path.Combine(
 					imageCacheDirectory,
-					"imageCacheReport.json"
+					currentRoute + "_ImageCacheReport.json"
 				);
 			
 			if (File.Exists(jsonPath))
@@ -178,6 +201,7 @@ namespace ArkhamDisplay
 				string cachePath =
 					System.IO.Path.Combine(
 						imageCacheDirectory,
+						currentGame,
 						hash + extension
 					);
 

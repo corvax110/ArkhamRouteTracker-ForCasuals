@@ -27,12 +27,11 @@
 		<CheckBox Name="DarkThemeCheckbox"		Content="Dark Mode"			Grid.Row="1" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,88,0,0" IsChecked="True"/>
     	<CheckBox Name="AlwaysOnTopCheckbox"		Content="Always Keep Main Window On Top"			Grid.Row="1" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,108,0,0" IsChecked="False"/>
 		<Button Name="ResetIgnoreListButton"
-			Content="Reset Ignore List"
+			Content="Clear Manually Completed Entries"
 			Grid.Row="1"
 			HorizontalAlignment="Left"
 			VerticalAlignment="Top"
 			Margin="10,140,0,0"
-			Width="120"
 			Click="resetIgnoreList"/>
 		<RadioButton Name="ShowAllButton"	Content="Show all entries"				Grid.Row="2" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,10,0,0" IsChecked="True"/>
 		<RadioButton Name="SortDoneButton"	Content="Sort completed entries to top"	Grid.Row="2" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,30,0,0" IsChecked="False"/>

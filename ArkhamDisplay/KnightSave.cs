@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Linq;
+using System.Windows;
 
 namespace ArkhamDisplay{
 	public class KnightSave : SaveParser{
@@ -53,12 +55,33 @@ namespace ArkhamDisplay{
 			{
 				requiredMatches = 2;
 			}
-			if (Data.IgnoreList.Contains(entry)) //process ignore list
+			if (matchEntry(entry)) //checks for any matching id's
 			{
 				requiredMatches = 0; //guarantee that it is treated as complete
 			}
 
 			return base.HasKey(entry, requiredMatches); //checks the save for the number of times the id is present, then returns a bool indicating its completeness
+		}
+
+		private bool matchEntry(Entry entry)
+		{
+			bool entriesMatch = false; //assume they don't
+
+			//C#'s && short-circuits, so if any comparison fails, it immediately stops and doesn't check the rest
+			//these are sorted by least likely to overlap with another entry
+			
+			if (Data.IgnoreList.Any(e =>
+				e.routeName == Data.CurrentRoute && //makes this route specific
+				e.name == entry.name &&     //only overlaps with its NG+ Entry
+				e.id == entry.id &&			//only overlaps with its NG+ Entry
+				e.image == entry.image &&   //only overlaps with its NG+ Entry
+				e.type == entry.type &&		//overlaps with all other of its category
+				e.metadata == entry.metadata &&  //overlaps with all NG+ Entries
+				e.alternateID == entry.alternateID))   //rarely is used in knight routes
+			{
+				entriesMatch = true;
+			}
+			return entriesMatch;
 		}
 
 		protected override string GetFile(){

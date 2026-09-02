@@ -90,6 +90,7 @@ namespace ArkhamDisplay{
 		private void resetIgnoreList(object sender, RoutedEventArgs e)
 		{
 			Data.IgnoreList = new List<Entry>();
+			Data.Save();
 		}
 	}
 }

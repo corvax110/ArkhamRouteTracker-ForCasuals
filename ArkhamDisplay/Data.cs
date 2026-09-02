@@ -61,6 +61,8 @@ namespace ArkhamDisplay{
 		public volatile bool knight240 = false;
 		public volatile bool knightMoF = false;
 		public volatile List<Entry> ignoreList = new List<Entry>();
+		public volatile List<String> ignoreTypes = new List<String>();
+		public volatile string currentRoute = "";
 	}
 
 	public class Data{
@@ -108,6 +110,8 @@ namespace ArkhamDisplay{
 		public static bool Knight240 { get { return data.knight240; } set { data.knight240 = value; } }
 		public static bool KnightMoF {  get { return data.knightMoF;  } set { data.knightMoF = value; } }
 		public static List<Entry> IgnoreList { get {return data.ignoreList; } set { data.ignoreList = value;}}
+		public static List<string> IgnoreTypes { get { return data.ignoreTypes; } set { data.ignoreTypes = value; }}
+		public static string CurrentRoute { get { return data.currentRoute; } set { data.currentRoute = value; }}
 
 		public static void Load(){
 			if(!System.IO.File.Exists(settingsFileName)){
@@ -118,7 +122,15 @@ namespace ArkhamDisplay{
 			}
 
 			lock(data){
-				data = JsonConvert.DeserializeObject<DataBlock>(System.IO.File.ReadAllText(settingsFileName));
+				try
+				{
+					data = JsonConvert.DeserializeObject<DataBlock>(System.IO.File.ReadAllText(settingsFileName));
+				}
+				catch (Exception ex)
+				{
+					MessageBox.Show("Error importing settings file: \n" + ex.ToString());
+					throw;
+				}
 			}
 
 			if (!System.IO.File.Exists(routeFileName))

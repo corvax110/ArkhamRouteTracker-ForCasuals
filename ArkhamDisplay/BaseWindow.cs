@@ -4,6 +4,8 @@ using System.ComponentModel;
 using System.Configuration;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows;
@@ -41,6 +43,7 @@ namespace ArkhamDisplay
 		private MenuItem cityMenuItem;
 		private MenuItem originsMenuItem;
 		private MenuItem knightMenuItem;
+		private MenuItem filterMenu;
 		private RadioButton saveSelector0;
 		private RadioButton saveSelector1;
 		private RadioButton saveSelector2;
@@ -98,6 +101,8 @@ namespace ArkhamDisplay
 			{
 				OpenStatsWindow();
 			}
+			SetCurrentRoute();
+			PopulateTypeFilterMenu();
 		}
 
 		protected override void OnInitialized(EventArgs e)
@@ -325,7 +330,8 @@ namespace ArkhamDisplay
 			}
 
 			SetStatsWindowStats();
-		}
+			PopulateTypeFilterMenu();
+		}		
 
 		private struct FinalEntry
 		{
@@ -380,9 +386,20 @@ namespace ArkhamDisplay
 			int lastCollectedID = -1;
 			List<int> gapSizes = new List<int>();
 
+			//go through all entries in the route
+			//check completion status and arrange order/existence of entries according to user settings
+
 			foreach (Entry entry in routeEntries)
 			{
-				//Hardcoded bullshit
+				//Skip this entry if it is an ignored category
+				if (Data.IgnoreTypes.Contains(currentRoute + entry.type))
+				{
+					totalEntries--;//decrement this so that the skipped entries are not included in tracking displays
+					continue;
+				}
+
+
+				//Hardcoded bullshit (game specific settings)
 				int mrm = minRequiredMatches;
 				if (Data.CityNGPlus && "RiddlerBeaten".Equals(entry.id))
 				{
@@ -392,9 +409,10 @@ namespace ArkhamDisplay
 				{
 					mrm = 3; //This appears twice for some reason after doing it in NG
 				}
+				
 
 
-				if (saveParser.HasKey(entry, mrm))
+				if (saveParser.HasKey(entry, mrm)) //if its found in the save enough times, aka its done
 				{
 					doneEntries++;
 					lastCollectedID = routeEntries.IndexOf(entry);
@@ -409,14 +427,14 @@ namespace ArkhamDisplay
 						gapSizes.Add(0);
 					}
 
-					if (Data.DisplayType == DisplayType.HideDone)
+					if (Data.DisplayType == DisplayType.HideDone) //exclude it if settings say to
 					{
 						continue;
 					}
 
-					finalEntries.Add(new FinalEntry(GetEntryName(entry), true, routeEntries.IndexOf(entry)));
+					finalEntries.Add(new FinalEntry(GetEntryName(entry), true, routeEntries.IndexOf(entry))); //add it to the list of indexs to be displayed
 				}
-				else
+				else //it is not complete
 				{
 					if (gapSizes.Count == 0)
 					{
@@ -426,15 +444,15 @@ namespace ArkhamDisplay
 
 					if (Data.DisplayType == DisplayType.All || Data.DisplayType == DisplayType.HideDone)
 					{
-						finalEntries.Add(new FinalEntry(GetEntryName(entry), false, routeEntries.IndexOf(entry), gapSizes.Count - 1));
+						finalEntries.Add(new FinalEntry(GetEntryName(entry), false, routeEntries.IndexOf(entry), gapSizes.Count - 1));  //add to list in original order
 					}
 					else
 					{
-						bottomEntries.Add(new FinalEntry(GetEntryName(entry), false, routeEntries.IndexOf(entry), gapSizes.Count - 1));
+						bottomEntries.Add(new FinalEntry(GetEntryName(entry), false, routeEntries.IndexOf(entry), gapSizes.Count - 1)); //add them to the list that will be appended to the bottom
 					}
 				}
 			}
-			finalEntries.AddRange(bottomEntries);
+			finalEntries.AddRange(bottomEntries); //append all the incomplete entries to the list of completed entries
 
 			if (gapSizes != null && gapSizes.Count > 0)
 			{
@@ -472,14 +490,15 @@ namespace ArkhamDisplay
 				};
 
 				//store the entry in the tag so we can access it later for the ignore list
-				txtBlock.Tag = routeEntries[entry.index];
+				Entry entryToIgnore = routeEntries[entry.index];
+				txtBlock.Tag = entryToIgnore;
 				ContextMenu contextMenu = new ContextMenu(); //create the context menu
 				MenuItem ignoreItem = new MenuItem
 				{
-					Header = "Add '" + entry.name +  "' to Ignore List"
+					Header = "Mark '" + entry.name +  "' as Completed"
 				};
 
-				ignoreItem.Click += (sender, e) => AddToIgnoreList_Click((Entry)txtBlock.Tag);
+				ignoreItem.Click += (sender, e) => AddToIgnoreList_Click(entryToIgnore);
 
 				contextMenu.Items.Add(ignoreItem);
 
@@ -618,9 +637,13 @@ namespace ArkhamDisplay
 				Data.SaveIDs[(int)game] = 3;
 				saveParser = CreateSaveParser();
 			}
+			if(sender != saveSelector0 && sender != saveSelector1 && sender != saveSelector2 && sender != saveSelector3)
+			{
+				SetCurrentRoute();
+				PopulateTypeFilterMenu();
+			}
 
 			Data.Save();
-
 			RefreshRoutes();
 		}
 
@@ -948,15 +971,133 @@ namespace ArkhamDisplay
 		}
 		private void AddToIgnoreList_Click(Entry entry) //the button trigger on click
         {
-			
+			try{
 			AddToIgnoreList(entry);
-			//MessageBox.Show($"{entry.name} added to ignore list.");
+			}catch (Exception ex)
+				{
+					MessageBox.Show("Error adding to ignore list: \n" + ex.ToString());
+					throw;
+				}
+			Data.Save();
+			RefreshRoutes();
         }
 		public void AddToIgnoreList(Entry entry) //clearing of the ignore list happens in the PreferenceWindow
 		{
-			List<Entry> workingList = Data.IgnoreList;
-			workingList.Add(entry);
+			List<Entry> workingList = new List<Entry>(Data.IgnoreList);
+			Entry workingEntry = new Entry(entry);
+			workingEntry.routeName = currentRoute;
+			if (workingList.Any(e =>
+				e.routeName == workingEntry.routeName && //makes this route specific
+				e.name == workingEntry.name &&     //only overlaps with its NG+ Entry
+				e.id == workingEntry.id &&			//only overlaps with its NG+ Entry
+				e.image == workingEntry.image &&   //only overlaps with its NG+ Entry
+				e.type == workingEntry.type &&		//overlaps with all other of its category
+				e.metadata == workingEntry.metadata &&  //overlaps with all NG+ Entries
+				e.alternateID == workingEntry.alternateID))   //rarely is used in knight routes
+			{
+				MessageBox.Show("You have marked entry as already completed.");
+				return;
+			}
+			workingList.Add(workingEntry);
 			Data.IgnoreList = workingList; //can only get or set values stored in data
+		}
+		protected virtual void TypeFilterMenu_SubmenuOpened(object sender, RoutedEventArgs e)
+		{
+			PopulateTypeFilterMenu();
+		}
+		protected void PopulateTypeFilterMenu()
+		{
+			filterMenu = FindName("TypeFilterMenu") as MenuItem;
+			if (filterMenu == null) //if the window doesnt have the menue in its xaml, dont crash, just stop running
+			{
+				return;
+			}
+			
+
+			List<Entry> routeEntries = GetEntriesForDisplay(Data.GetRoute(currentRoute));
+			List<String> types = new List<string>();
+			foreach(Entry entry in routeEntries)
+			{
+				if (!types.Contains(entry.type) && entry.type != null && entry.type != "")
+				{
+					types.Add(entry.type);
+				}
+			}
+			
+			filterMenu.Items.Clear();  //get rid of any existing elememnts
+			foreach(String category in types)
+			{
+				MenuItem menuItem = new MenuItem
+				{
+					Header = category,
+					IsCheckable = true,
+					IsChecked = !Data.IgnoreTypes.Contains(currentRoute + category), //unchecking should be how the user removes a category
+					StaysOpenOnClick = true
+				};
+
+				menuItem.Click += TypeFilterMenu_Click;
+				filterMenu.Items.Add(menuItem);  //place element in menu
+			}
+
+			//trigger refresh after submenu is closed
+			filterMenu.SubmenuClosed -= TypeFilterMenu_SubmenuClosed; //make it so only one copy of the event handler is applied
+			filterMenu.SubmenuClosed += TypeFilterMenu_SubmenuClosed;
+		}
+		protected void TypeFilterMenu_Click(object sender, RoutedEventArgs e) //add or remove from ignored categories
+		{
+			MenuItem menuItem = sender as MenuItem;
+
+			if (menuItem == null) //idk how this would trigger, but might as well prevent it
+			{
+				return;
+			}
+			string type = menuItem.Header.ToString();
+
+			if (!menuItem.IsChecked)
+			{
+				if (!Data.IgnoreTypes.Contains(currentRoute + type))
+				{
+					Data.IgnoreTypes.Add(currentRoute + type);
+				}
+			}
+			else
+			{
+				if (Data.IgnoreTypes.Contains(currentRoute + type))
+				{
+					Data.IgnoreTypes.Remove(currentRoute + type);
+				}
+			}
+			//Data.Save();
+			e.Handled = true;
+		}
+		protected void TypeFilterMenu_SubmenuClosed(object sender, RoutedEventArgs e)
+		{
+			Data.Save();
+			RefreshRoutes();
+		}
+		protected string getGameName()
+		{
+			string gameName;
+			switch(game)
+			{
+				case Game.Asylum:
+					gameName = "ArkhamAsylum";
+					break;
+				case Game.City:
+					gameName = "ArkhamCity";
+					break;
+				case Game.Origins:
+					gameName = "ArkhamOrigins";
+					break;
+				case Game.Knight:
+					gameName = "ArkhamKnight";
+					break;
+				default:
+					gameName = "";
+					break;
+			}
+			return gameName;
+
 		}
 	}
 }

@@ -25,7 +25,7 @@
             Grid.Row="1"
             Orientation="Horizontal"
             HorizontalAlignment="Center"
-            Margin="0,55,0,20">
+            Margin="0,45,0,20">
 
         <Button
             Name="YesButton"
@@ -57,13 +57,31 @@
             Visibility="Collapsed"
             FontStyle="Italic"
             FontSize="16"/>
-        <Button
-            Name="ClearCacheButton"
+        <TextBlock
+            Name="CacheClearQuestion"
             HorizontalAlignment="Center"
             VerticalAlignment="Top"
-            Margin="0,110,0,0"
-            Content="Clear The Image Cache"
-            Click="ClearCache_Click"/>
+            Margin="0,90,0,0"
+            Text="Clear Cache:"
+            TextWrapping="Wrap"
+            TextAlignment="Center"
+            Visibility="Visible"
+            FontStyle="Italic"
+            FontSize="16"/>
+        <Button
+            Name="ClearCurrentCacheButton"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Top"
+            Margin="-95,110,0,0"
+            Content="Current Game"
+            Click="ClearCurrentCache_Click"/>
+        <Button
+            Name="ClearAllCacheButton"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Top"
+            Margin="74,110,0,0"
+            Content="All Games"
+            Click="ClearAllCache_Click"/>
 
     </Grid>
     <Grid Name="CacheProgress" Margin="25" Visibility="Collapsed">
